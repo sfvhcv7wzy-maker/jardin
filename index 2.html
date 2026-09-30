@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A garden for you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --noche: #170c22;
+    --suelo: #0f2420;
+    --rosa: #ff5fa2;
+    --rosa-fuerte: #d81b7a;
+    --rosa-suave: #ffb3d6;
+    --lila: #b57bff;
+    --hueso: #f6e9ff;
+    --tinta: #f6e9ff;
+    --suave: #c9b3e6;
+    --morado: #2a1440;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --noche: #170c22; } }
+  :root[data-theme="dark"] { --noche: #170c22; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background-color: var(--noche);
+    background-image: linear-gradient(var(--noche) 55%, var(--suelo));
+    color: var(--tinta);
+    font-family: "Fredoka", "Trebuchet MS", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .oculto { display: none !important; }
+  .pantalla { height: 100%; width: 100%; }
+
+  /* ---------- Welcome screen ---------- */
+  #intro {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 20px 24px; gap: 6px;
+    background-image:
+      radial-gradient(1.5px 1.5px at 12% 14%, var(--hueso) 50%, transparent 51%),
+      radial-gradient(1px 1px at 78% 9%, var(--rosa-suave) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 90% 32%, var(--hueso) 50%, transparent 51%),
+      radial-gradient(1px 1px at 30% 38%, var(--lila) 50%, transparent 51%),
+      radial-gradient(1px 1px at 60% 80%, var(--hueso) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 8% 70%, var(--rosa-suave) 50%, transparent 51%);
+  }
+  .emblema { width: 84px; height: 84px; flex: none; }
+  #intro h1 {
+    font-family: "Chewy", "Comic Sans MS", cursive; font-weight: 400;
+    font-size: 2.3rem; line-height: 1.1; margin: 6px 0 0; color: var(--rosa-suave);
+  }
+  #intro .texto { font-size: 1.2rem; line-height: 1.45; margin: 4px 0 0; max-width: 20em; }
+  #pista { min-height: 1.4em; margin: 6px 0 0; color: var(--lila); font-size: 1rem; }
+  .botones { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; margin-top: 12px; width: 100%; }
+  .botones button {
+    font: inherit; font-weight: 600; border: 0; cursor: pointer; border-radius: 999px;
+    padding: .55em 1.4em; -webkit-tap-highlight-color: transparent;
+  }
+  #btnSi { background: var(--rosa-fuerte); color: #fff; font-size: 1.15rem; }
+  #btnSi.ultimo { width: 100%; font-size: 3.6rem; padding: .5em 0; }
+  #btnNo { background: transparent; color: var(--suave); border: 2px solid var(--suave); font-size: 1rem; }
+  .botones button:focus-visible { outline: 3px solid var(--hueso); outline-offset: 3px; }
+  #gracias {
+    font-family: "Chewy", "Comic Sans MS", cursive; font-size: 2.2rem; line-height: 1.15;
+    color: var(--rosa-suave); margin: 14px 0 0;
+  }
+
+  /* ---------- Garden ---------- */
+  #jardin { display: flex; justify-content: center; }
+  #jardin.aparece { animation: aparece .8s ease both; }
+  @keyframes aparece { from { opacity: 0; } to { opacity: 1; } }
+  #escena { width: 100%; max-width: 560px; height: 100%; display: block; }
+  .cartel { font-family: "Chewy", "Comic Sans MS", cursive; font-size: 21px; fill: #fff0f6; stroke: #3b1f12; stroke-width: 3px; paint-order: stroke; }
+  .hint { font-family: "Fredoka", system-ui, sans-serif; font-size: 13px; fill: #c9b3e6; transition: opacity .4s; }
+  .hint.fuera { opacity: 0; }
+  .flor, .nota { cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; }
+  .flor .giro, .nota .giro { transform-box: fill-box; transform-origin: center; }
+  .flor.rebota .giro { animation: rebota .45s; }
+  @keyframes rebota { 30% { transform: scale(1.14) rotate(-5deg); } 60% { transform: scale(.97) rotate(3deg); } }
+  .nota.aparece .giro { animation: menea 1.1s 2; }
+  @keyframes menea { 20% { transform: rotate(-10deg); } 50% { transform: rotate(9deg); } 80% { transform: rotate(-5deg); } }
+  .flor .corazon { opacity: 0; transition: opacity .3s; font-size: 16px; fill: #ff5fa2; stroke: #170c22; stroke-width: 2px; paint-order: stroke; }
+  .flor.vista .corazon { opacity: 1; }
+  .flor:focus-visible .hit, .nota:focus-visible .hit { stroke: #fff; stroke-width: 2; fill: rgba(255,255,255,.14); }
+
+  /* ---------- Song card ---------- */
+  .tarjeta {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    max-width: 560px; margin: 0 auto; background: var(--hueso); color: var(--morado);
+    border-radius: 22px 22px 0 0; padding: 14px 18px calc(14px + env(safe-area-inset-bottom, 0px));
+    transform: translateY(105%); transition: transform .3s ease;
+    box-shadow: 0 -6px 30px rgba(0,0,0,.4);
+  }
+  .tarjeta.abierta { transform: translateY(0); }
+  .tarjeta small { color: #7a4fb0; }
+  .tarjeta h2 { font-family: "Chewy", "Comic Sans MS", cursive; font-weight: 400; font-size: 1.45rem; margin: 2px 0 0; color: var(--rosa-fuerte); line-height: 1.15; }
+  .tarjeta .artista { margin: 0 0 6px; font-weight: 600; font-size: .95rem; }
+  .tarjeta .motivo { margin: 0 0 10px; line-height: 1.4; font-size: .95rem; }
+  .acciones { display: flex; gap: 10px; }
+  .btn {
+    flex: 1; text-align: center; text-decoration: none; font: inherit; font-weight: 600; font-size: .95rem;
+    padding: 10px 8px; border-radius: 12px; border: 2px solid var(--rosa-fuerte);
+    background: var(--rosa-fuerte); color: #fff; cursor: pointer;
+  }
+  .btn.sec { background: transparent; color: var(--rosa-fuerte); flex: 0 0 34%; }
+  .btn:focus-visible { outline: 3px solid var(--morado); outline-offset: 2px; }
+
+  /* ---------- Paper note (mini letter) ---------- */
+  #hojaPapel {
+    position: fixed; inset: 0; z-index: 8; display: none; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(23,12,34,.66);
+  }
+  #hojaPapel.abierto { display: flex; }
+  .hoja {
+    position: relative; width: 100%; max-width: 340px; padding: 30px 8px 16px;
+    background-color: #fff9ea;
+    background-image: repeating-linear-gradient(transparent 0 31px, rgba(216,27,122,.16) 31px 32px);
+    border-radius: 6px; transform: rotate(-1.5deg); color: var(--morado);
+    box-shadow: 0 14px 40px rgba(0,0,0,.5);
+  }
+  .hoja::before, .hoja::after {
+    content: ""; position: absolute; top: -10px; width: 64px; height: 22px;
+    background: rgba(255,179,214,.8); border: 1px solid rgba(216,27,122,.25);
+  }
+  .hoja::before { left: 12px; transform: rotate(-8deg); }
+  .hoja::after { right: 12px; transform: rotate(7deg); }
+  .hoja-cont { max-height: 72vh; overflow-y: auto; padding: 0 16px; text-align: left; }
+  .hoja .de { margin: 0; font-size: .95rem; line-height: 32px; color: #7a4fb0; font-weight: 600; }
+  .hoja h3 { font-family: "Chewy", "Comic Sans MS", cursive; font-weight: 400; font-size: 1.55rem; line-height: 1.2; margin: 0 0 10px; color: var(--rosa-fuerte); }
+  .hoja .carta { margin: 0; font-size: 1rem; line-height: 32px; }
+  .hoja .solo { margin: 6px 0 0; font-family: "Chewy", "Comic Sans MS", cursive; font-size: 1.25rem; line-height: 32px; color: var(--rosa-fuerte); }
+  .firma { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
+  .firma p { margin: 0; line-height: 32px; }
+  .firma .con { font-weight: 600; }
+  .firma .v { font-family: "Chewy", "Comic Sans MS", cursive; font-size: 1.3rem; color: var(--rosa-fuerte); }
+  #imgCarino { width: 92px; height: 92px; object-fit: contain; flex: none; }
+  .hoja a { display: inline-block; margin-top: 8px; color: var(--rosa-fuerte); font-weight: 600; }
+  .hoja .btn { margin-top: 14px; width: 100%; flex: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tarjeta { transition: none; }
+    .flor.rebota .giro, #jardin.aparece, .nota.aparece .giro { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 1) WELCOME ============ -->
+<main id="intro" class="pantalla">
+  <svg class="emblema" viewBox="0 0 80 80" aria-hidden="true">
+    <path d="M40 10c-16 0-26 10-26 24 0 8 4 13 9 16v9c0 3 2 5 5 5h24c3 0 5-2 5-5v-9c5-3 9-8 9-16 0-14-10-24-26-24z" fill="#ff5fa2"/>
+    <ellipse cx="30" cy="36" rx="6" ry="7.5" fill="#170c22"/>
+    <ellipse cx="50" cy="36" rx="6" ry="7.5" fill="#170c22"/>
+    <path d="M40 44l-3 6h6z" fill="#170c22"/>
+    <path d="M32 58v7M40 58v7M48 58v7" stroke="#170c22" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M40 12L27 4c-3 8 3 13 13 8zM40 12l13-8c3 8-3 13-13 8z" fill="#b57bff"/>
+    <circle cx="40" cy="12" r="4" fill="#f6e9ff"/>
+  </svg>
+  <h1 id="saludo">Hi, Lesly Chanel</h1>
+  <p class="texto" id="texto">Welcome to your garden.<br>I have something for you. Do you accept?</p>
+  <p id="pista" aria-live="polite"></p>
+  <div class="botones" id="botones">
+    <button id="btnSi">Yes</button>
+    <button id="btnNo">No</button>
+  </div>
+  <p id="gracias" class="oculto">Thanks for accepting, darling</p>
+</main>
+
+<!-- ============ 2) GARDEN ============ -->
+<main id="jardin" class="pantalla oculto">
+<svg id="escena" viewBox="0 0 360 560" preserveAspectRatio="xMidYMin meet" role="img" aria-label="A doll holding a bouquet of seven flowers in a garden">
+  <defs>
+    <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#170c22"/><stop offset="1" stop-color="#341a52"/></linearGradient>
+    <linearGradient id="suelo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#24473f"/><stop offset="1" stop-color="#0f2420"/></linearGradient>
+    <linearGradient id="madera" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a6540"/><stop offset="1" stop-color="#6b3f2a"/></linearGradient>
+    <linearGradient id="papel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe3ef"/><stop offset="1" stop-color="#ffb3d6"/></linearGradient>
+    <linearGradient id="verde" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a9a7c"/><stop offset="1" stop-color="#1c5c4a"/></linearGradient>
+    <radialGradient id="brillo" cx=".32" cy=".28" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></radialGradient>
+    <filter id="sombraFlor" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="1.6" stdDeviation="1.6" flood-color="#000" flood-opacity=".38"/></filter>
+    <mask id="lunaMask" maskUnits="userSpaceOnUse" x="0" y="0" width="360" height="560">
+      <rect width="360" height="560" fill="#fff"/><circle cx="53" cy="132" r="15" fill="#000"/>
+    </mask>
+  </defs>
+
+  <!-- Sky, moon and stars -->
+  <rect width="360" height="560" fill="url(#cielo)"/>
+  <circle cx="44" cy="138" r="18" fill="#f6e9ff" mask="url(#lunaMask)"/>
+  <g fill="#f6e9ff">
+    <circle cx="300" cy="130" r="1.6"/><circle cx="330" cy="170" r="1.2"/><circle cx="20" cy="200" r="1.4"/>
+    <circle cx="90" cy="150" r="1.1"/><circle cx="270" cy="200" r="1.3"/><circle cx="340" cy="250" r="1.5"/>
+    <circle cx="26" cy="290" r="1.2"/><circle cx="310" cy="300" r="1"/>
+    <path d="M318 112l2-5 2 5 5 2-5 2-2 5-2-5-5-2z"/><path d="M62 190l1.6-4 1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6z" fill="#ffb3d6"/>
+  </g>
+
+  <!-- Bushes and ground -->
+  <ellipse cx="18" cy="472" rx="48" ry="36" fill="#173a33"/>
+  <ellipse cx="346" cy="476" rx="50" ry="38" fill="#173a33"/>
+  <g>
+    <circle cx="8" cy="456" r="3.2" fill="#ff8ac6"/><circle cx="30" cy="464" r="3" fill="#b57bff"/><circle cx="20" cy="446" r="2.6" fill="#f6e9ff"/>
+    <circle cx="338" cy="458" r="3.2" fill="#ff8ac6"/><circle cx="354" cy="470" r="3" fill="#f6e9ff"/><circle cx="324" cy="470" r="2.8" fill="#b57bff"/>
+  </g>
+  <path d="M0 492Q180 462 360 492L360 560L0 560Z" fill="url(#suelo)"/>
+  <g fill="#2f6b5a">
+    <path d="M28 528l-5-16 7 10 4-14 4 14 7-10-5 16z"/><path d="M96 540l-4-13 6 8 3-11 3 11 6-8-4 13z"/>
+    <path d="M262 536l-4-13 6 8 3-11 3 11 6-8-4 13z"/><path d="M326 526l-5-16 7 10 4-14 4 14 7-10-5 16z"/>
+  </g>
+  <g>
+    <path d="M56 546V530M300 548V532M132 552V538" stroke="#2f6b5a" stroke-width="2"/>
+    <circle cx="56" cy="528" r="4" fill="#ff8ac6"/><circle cx="300" cy="530" r="4" fill="#b57bff"/><circle cx="132" cy="536" r="3.6" fill="#f6e9ff"/>
+  </g>
+
+  <!-- Sign -->
+  <path d="M84 0L92 30M276 0L268 30" stroke="#c9a37a" stroke-width="2.5"/>
+  <rect x="40" y="28" width="280" height="76" rx="10" fill="url(#madera)" stroke="#4a2a1a" stroke-width="3"/>
+  <path d="M52 50h256M50 74h258" stroke="#4a2a1a" stroke-opacity=".25" stroke-width="1.5"/>
+  <g fill="#d9c3a5"><circle cx="54" cy="42" r="3"/><circle cx="306" cy="42" r="3"/><circle cx="54" cy="90" r="3"/><circle cx="306" cy="90" r="3"/></g>
+  <text class="cartel" x="180" y="62" text-anchor="middle">For my precious girl</text>
+  <text class="cartel" x="180" y="90" text-anchor="middle">with perfect little eyes</text>
+  <text class="hint" id="hint" x="180" y="128" text-anchor="middle">Tap the flowers</text>
+
+  <!-- Doll -->
+  <g id="muneca">
+    <path d="M126 226C120 160 240 160 234 226L238 292Q180 304 122 292Z" fill="#1b1024"/>
+    <rect x="156" y="462" width="14" height="46" fill="#1b1024"/><rect x="190" y="462" width="14" height="46" fill="#1b1024"/>
+    <path d="M148 506q15-6 30 0l3 10h-36z" fill="#0f0717"/><path d="M182 506q15-6 30 0l3 10h-36z" fill="#0f0717"/>
+    <path d="M150 512h28M184 512h28" stroke="#ff5fa2" stroke-width="2.5"/>
+    <path d="M150 268Q180 262 210 268L206 330Q248 380 262 470Q180 492 98 470Q112 380 154 330Z" fill="#3a1a5c"/>
+    <path d="M98 470Q180 492 262 470" stroke="#ff5fa2" stroke-width="5" fill="none"/>
+    <path d="M150 268Q180 262 210 268L208 286Q180 280 152 286Z" fill="#2c1247"/>
+    <g fill="#b57bff" opacity=".8">
+      <path d="M128 410l1.6-4 1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6z"/><path d="M232 420l1.6-4 1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6z"/>
+      <path d="M112 450l1.4-3.4 1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4z"/><path d="M246 452l1.4-3.4 1.4 3.4 3.4 1.4-3.4 1.4-1.4 3.4-1.4-3.4-3.4-1.4z"/>
+    </g>
+    <path d="M160 268L180 286L200 268" stroke="#f6e9ff" stroke-width="4" fill="none" stroke-linejoin="round"/>
+    <rect x="172" y="248" width="16" height="26" fill="#ffd3de"/>
+    <ellipse cx="180" cy="215" rx="46" ry="44" fill="#ffe3ea"/>
+    <path d="M133 212C130 168 230 168 227 212C215 197 197 191 180 197C163 191 145 197 133 212Z" fill="#1b1024"/>
+    <ellipse cx="162" cy="224" rx="8" ry="10" fill="#4b1f7a"/><ellipse cx="198" cy="224" rx="8" ry="10" fill="#4b1f7a"/>
+    <circle cx="159" cy="220" r="3.2" fill="#fff"/><circle cx="195" cy="220" r="3.2" fill="#fff"/>
+    <circle cx="165" cy="229" r="1.6" fill="#fff"/><circle cx="201" cy="229" r="1.6" fill="#fff"/>
+    <ellipse cx="146" cy="240" rx="8" ry="4.5" fill="#ff8ac6" opacity=".6"/><ellipse cx="214" cy="240" rx="8" ry="4.5" fill="#ff8ac6" opacity=".6"/>
+    <path d="M174 244Q180 250 186 244" stroke="#b0306c" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M140 180L118 168V194Z" fill="#ff5fa2"/><path d="M140 180L162 168V194Z" fill="#ff5fa2"/><circle cx="140" cy="181" r="5.5" fill="#d81b7a"/>
+    <path d="M222 182l2.4-6 2.4 6 6 2.4-6 2.4-2.4 6-2.4-6-6-2.4z" fill="#f6e9ff"/>
+    <path d="M152 282Q112 350 142 428" stroke="#3a1a5c" stroke-width="16" fill="none" stroke-linecap="round"/>
+    <path d="M208 282Q248 350 218 428" stroke="#3a1a5c" stroke-width="16" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- If kuromi.png sits next to this file, it replaces the doll -->
+  <image id="kuromi" display="none" x="60" y="150" width="240" height="372" preserveAspectRatio="xMidYMax meet"/>
+
+  <!-- Bouquet: foliage, stems and the 7 flowers are drawn by the script -->
+  <g id="ramo"></g>
+
+  <!-- Wrapping paper, ribbon and hands -->
+  <g>
+    <path d="M122 404Q180 394 238 404L182 510Q180 512 178 510Z" fill="url(#papel)" stroke="#e58fb6" stroke-width="1.5"/>
+    <path d="M150 408L178 502M210 408L182 502" stroke="#d81b7a" stroke-opacity=".22" stroke-width="1.5" fill="none"/>
+    <path d="M180 416C158 398 148 424 172 424Z" fill="#b57bff"/><path d="M180 416C202 398 212 424 188 424Z" fill="#b57bff"/>
+    <path d="M178 422L166 452M182 422L194 452" stroke="#b57bff" stroke-width="4.5" stroke-linecap="round"/>
+    <circle cx="180" cy="419" r="5.5" fill="#8a52d8"/>
+    <g id="manos"><circle cx="143" cy="433" r="9.5" fill="#ffe3ea"/><circle cx="217" cy="433" r="9.5" fill="#ffe3ea"/></g>
+  </g>
+
+  <!-- The paper note (appears after the 7th song) -->
+  <g id="nota" class="nota" display="none" tabindex="0" role="button" aria-label="Open the little note">
+    <g class="giro">
+      <path d="M180 421C178 436 184 444 181 462" stroke="#c9a37a" stroke-width="1.6" fill="none"/>
+      <g transform="translate(180 480) rotate(-6)">
+        <rect x="-19" y="-16" width="38" height="32" rx="2" fill="#fff9ea" stroke="#c9a37a" stroke-width="1.4"/>
+        <circle cx="0" cy="-11" r="1.8" fill="#c9a37a"/>
+        <path d="M-12 -3h24M-12 3h16" stroke="#d81b7a" stroke-opacity=".5" stroke-width="1.4" stroke-linecap="round"/>
+        <path d="M8 10c-3-2-4-4-2-5.5 1.3-1 2.4 0 2 1 .4-1 1.7-2 3-1 1.8 1.5.7 3.5-3 5.5z" fill="#ff5fa2"/>
+      </g>
+      <circle class="hit" cx="180" cy="478" r="26" fill="transparent"/>
+    </g>
+  </g>
+</svg>
+</main>
+
+<!-- ============ Song card ============ -->
+<div class="tarjeta" id="tarjeta" role="dialog" aria-live="polite" aria-labelledby="tCancion">
+  <small id="tNum"></small>
+  <h2 id="tCancion"></h2>
+  <p class="artista" id="tArtista"></p>
+  <p class="motivo" id="tMotivo"></p>
+  <div class="acciones">
+    <a class="btn" id="tSpotify" href="#" target="_blank" rel="noopener">Listen on Spotify</a>
+    <button class="btn sec" id="cerrar">Close</button>
+  </div>
+</div>
+
+<!-- ============ Paper note ============ -->
+<div id="hojaPapel" role="dialog" aria-labelledby="papelTitulo">
+  <div class="hoja">
+    <div class="hoja-cont">
+      <p class="de">From your favorite engineer:</p>
+      <h3 id="papelTitulo">7 little songs that make me think of you, you know&hellip;</h3>
+      <p class="carta">I made this little garden to share the songs that pop into my head when I think of you. And since I'm being honest, I have to say it: your eyes are perfect, and your moles are beautiful. I hope these songs make you smile, even a little.</p>
+      <p class="solo">Just because you're pretty,</p>
+      <div class="firma">
+        <div>
+          <p class="con">With affection, your cariño</p>
+          <p class="v">-V &#128139;</p>
+        </div>
+        <img id="imgCarino" class="oculto" alt="">
+      </div>
+      <a id="papelLink" href="#" target="_blank" rel="noopener" class="oculto">Open the full playlist</a>
+      <button class="btn" id="cerrarPapel">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =========== CHANGE HERE =========== */
+const PLAYLIST_URL = ""; // Paste your Spotify playlist link here (optional)
+const CANCIONES = [
+  { titulo: "¿Qué se siente que me gustes tanto?", artista: "Daniel, me estás matando", motivo: "Because I like you so much." },
+  { titulo: "How Do You Do It?", artista: "", motivo: "Because I don't know how you do it." },
+  { titulo: "Just Like Heaven", artista: "The Cure", motivo: "Because with you everything feels like a dream." },
+  { titulo: "Ojitos Lindos", artista: "Bad Bunny, Bomba Estéreo", motivo: "For your perfect little eyes." },
+  { titulo: "Enchanted", artista: "Taylor Swift", motivo: "Because since I met you I've been speechless." },
+  { titulo: "La Vie en Rose", artista: "Édith Piaf", motivo: "Because with you the world looks pink." },
+  { titulo: "Just the Way You Are", artista: "Bruno Mars", motivo: "Because just the way you are, you're perfect to me." }
+];
+/* =================================== */
+
+const $ = (id) => document.getElementById(id);
+
+/* ---------- Welcome screen: Yes / No ---------- */
+let noClicks = 0;
+const pistas = ["", "Are you sure?", "Think it over…", "It's with love, you know", "Last chance…"];
+$("btnNo").onclick = () => {
+  noClicks++;
+  $("pista").textContent = pistas[Math.min(noClicks, pistas.length - 1)];
+  if (noClicks >= 5) {
+    $("btnNo").classList.add("oculto");
+    $("btnSi").classList.add("ultimo");
+    $("btnSi").style.fontSize = "";
+  } else {
+    $("btnSi").style.fontSize = (1.15 + noClicks * 0.75) + "rem";
+    $("btnNo").style.fontSize = Math.max(0.65, 1 - noClicks * 0.09) + "rem";
+  }
+};
+$("btnSi").onclick = () => {
+  ["botones", "pista", "texto", "saludo"].forEach((id) => $(id).classList.add("oculto"));
+  $("gracias").classList.remove("oculto");
+  setTimeout(() => {
+    $("intro").classList.add("oculto");
+    $("jardin").classList.remove("oculto");
+    $("jardin").classList.add("aparece");
+  }, 2400);
+};
+
+/* ---------- Flower drawing ---------- */
+const SVGNS = "http://www.w3.org/2000/svg";
+// n petals around a ring; "lip" adds a soft highlight on each petal edge
+const capa = (n, d, rx, ry, rot, fill, lip) => Array.from({ length: n }, (_, i) => {
+  const a = rot + i * 360 / n;
+  let s = `<ellipse cx="0" cy="${-d}" rx="${rx}" ry="${ry}" fill="${fill}" stroke="rgba(60,0,40,.3)" stroke-width=".8"/>`;
+  if (lip) s += `<path d="M${(-rx * .65).toFixed(1)} ${(-d - ry * .72).toFixed(1)}Q0 ${(-d - ry * 1.06).toFixed(1)} ${(rx * .65).toFixed(1)} ${(-d - ry * .72).toFixed(1)}" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.1" stroke-linecap="round"/>`;
+  return `<g transform="rotate(${a})">${s}</g>`;
+}).join("");
+const brillo = `<circle r="30" fill="url(#brillo)"/>`;
+const rosa = (c) =>
+  capa(6, 17, 14, 13, 0, c[0], true) + capa(5, 11.5, 11, 10.5, 20, c[1], true) + capa(4, 7, 8.5, 8, 10, c[2], true) + capa(3, 3.5, 5.5, 5.5, 0, c[3]) +
+  `<path d="M-3.5 0C-3.5-4.5 3.5-4.5 3.5 0C3.5 3.5-2.5 3.5-2.5 0" fill="none" stroke="${c[4]}" stroke-width="1.2"/>` + brillo;
+const peonia = (c) =>
+  capa(9, 18, 10, 13, 0, c[0], true) + capa(8, 13.5, 9.5, 11, 10, c[1], true) + capa(7, 9, 8, 9.5, 5, c[2], true) + capa(6, 5.5, 6, 7, 25, c[3]) + capa(4, 2.5, 4, 4.5, 0, c[4]) + brillo;
+const margarita = () =>
+  capa(16, 19, 4.6, 12.5, 0, "#fbfaff") + capa(12, 15, 3.8, 9, 8, "#efe8fb") +
+  `<circle r="8" fill="#ffc83d" stroke="#d99a12" stroke-width="1"/><circle cx="-2" cy="-2" r=".9" fill="#b87a00"/><circle cx="2" cy="1" r=".9" fill="#b87a00"/><circle cx="-1" cy="3" r=".9" fill="#b87a00"/><circle cx="3" cy="-3" r=".9" fill="#b87a00"/>` + brillo;
+const tulipan = () =>
+  `<path d="M-4-28C-24-22-24 10-2 22C-8 6-8-12-4-28Z" fill="#b993f5" stroke="rgba(40,0,80,.3)" stroke-width=".8"/>
+   <path d="M4-28C24-22 24 10 2 22C8 6 8-12 4-28Z" fill="#a57df0" stroke="rgba(40,0,80,.3)" stroke-width=".8"/>
+   <path d="M0-30C15-20 17 8 0 22C-17 8-15-20 0-30Z" fill="#cdb0ff" stroke="rgba(40,0,80,.3)" stroke-width=".8"/>
+   <path d="M-5-18C-8-6-7 6-3 14" stroke="#fff" stroke-opacity=".6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+   <path d="M5-16C8-6 7 4 3 12" stroke="#7a4fb0" stroke-opacity=".35" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
+const hortensia = () => {
+  const cols = ["#9db8ff", "#b7a6ff", "#c9b8ff", "#8fb0f5"];
+  let s = `<circle r="29" fill="#7d8fe0" opacity=".45"/>`;
+  for (let k = 0; k < 30; k++) {
+    const r = Math.sqrt(k / 30) * 25, a = k * 2.39996;
+    s += `<g transform="translate(${(r * Math.cos(a)).toFixed(1)} ${(r * Math.sin(a)).toFixed(1)}) rotate(${k * 17})">${capa(4, 3.2, 2.8, 3.6, 0, cols[k % 4])}<circle r="1" fill="#f4f0ff"/></g>`;
+  }
+  return s;
+};
+
+const C_ROSA   = ["#ffc2dc", "#ff9cc4", "#f472a8", "#e0508f", "#b83373"];
+const C_HOT    = ["#ff7bb8", "#ff4d9f", "#e8267f", "#c81466", "#8f0c47"];
+const C_MORADA = ["#c9a0ff", "#a874f0", "#8a52d8", "#6b32b4", "#47207f"];
+const C_PEON   = ["#fff0f7", "#ffdbe9", "#ffc0d9", "#ff9ec4", "#f27fb0"];
+
+// x, y = flower centre; r = size; tope = where the stem meets the head (fraction of r)
+const FLORES = [
+  { x: 118, y: 306, r: 20, tope: .2,  dibujo: hortensia() },
+  { x: 240, y: 300, r: 20, tope: .55, dibujo: tulipan() },
+  { x: 84,  y: 346, r: 20, tope: .2,  dibujo: margarita() },
+  { x: 276, y: 344, r: 22, tope: .2,  dibujo: rosa(C_HOT) },
+  { x: 140, y: 346, r: 25, tope: .2,  dibujo: peonia(C_PEON) },
+  { x: 222, y: 348, r: 25, tope: .2,  dibujo: rosa(C_MORADA) },
+  { x: 180, y: 318, r: 28, tope: .2,  dibujo: rosa(C_ROSA) }
+];
+
+const bez = (a, b, c, d, t) => { const u = 1 - t; return u*u*u*a + 3*u*u*t*b + 3*u*t*t*c + t*t*t*d; };
+
+function follaje() {
+  let s = "";
+  // baby's breath sprigs
+  [[150, 274], [208, 270], [96, 294], [268, 292], [60, 324], [304, 322]].forEach(([x, y]) => {
+    s += `<path d="M${180 + (x - 180) * .2} 412Q${180 + (x - 180) * .5} ${y + 40} ${x} ${y}" stroke="#3f9a7e" stroke-width="1.3" fill="none"/>`;
+    [[0, 0], [-5, 4], [5, 3], [-3, -5], [4, -4], [0, 8]].forEach(([dx, dy], k) => {
+      s += `<circle cx="${x + dx}" cy="${y + dy}" r="${k % 2 ? 1.8 : 2.4}" fill="#f6e9ff"/>`;
+    });
+  });
+  // big leaves at the mouth of the bouquet
+  [[118, 402, -52], [242, 402, 52], [96, 410, -28], [264, 410, 28], [150, 396, -70], [210, 396, 70]].forEach(([x, y, r]) => {
+    s += `<ellipse cx="${x}" cy="${y}" rx="24" ry="7.5" transform="rotate(${r} ${x} ${y})" fill="url(#verde)"/><path d="M${x - 20} ${y}H${x + 20}" stroke="rgba(255,255,255,.25)" stroke-width=".9" transform="rotate(${r} ${x} ${y})"/>`;
+  });
+  return s;
+}
+
+function tallos() {
+  let s = "";
+  FLORES.forEach((f) => {
+    const mx = 180 + (f.x - 180) * .3, sy = 414, ey = f.y + f.r * f.tope;
+    const c1 = [mx + (f.x - mx) * .15, 398], c2 = [f.x, ey + 34];
+    const d = `M${mx} ${sy}C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${f.x} ${ey}`;
+    s += `<path d="${d}" stroke="#1f5e49" stroke-width="4.2" fill="none" stroke-linecap="round"/>` +
+         `<path d="${d}" stroke="#57b591" stroke-width="1.5" fill="none" stroke-linecap="round" transform="translate(-.9 0)"/>`;
+    if (f.x !== 180) {
+      const dir = Math.sign(f.x - 180), t = .55;
+      const px = bez(mx, c1[0], c2[0], f.x, t), py = bez(sy, c1[1], c2[1], ey, t);
+      const cx = px + dir * 8, cy = py - 2;
+      s += `<ellipse cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" rx="9" ry="3.6" transform="rotate(${dir * -32} ${cx.toFixed(1)} ${cy.toFixed(1)})" fill="url(#verde)"/>`;
+    }
+  });
+  return s;
+}
+
+/* ---------- Build the bouquet ---------- */
+const vistas = new Set();
+const ramo = $("ramo");
+ramo.innerHTML = follaje() + tallos();
+
+function abrir(i, el) {
+  const c = CANCIONES[i];
+  $("tNum").textContent = `Flower ${i + 1} of ${CANCIONES.length}`;
+  $("tCancion").textContent = c.titulo;
+  $("tArtista").textContent = c.artista;
+  $("tArtista").hidden = !c.artista;
+  $("tMotivo").textContent = c.motivo;
+  $("tSpotify").href = "https://open.spotify.com/search/" + encodeURIComponent((c.titulo + " " + c.artista).trim());
+  el.classList.remove("rebota"); void el.getBoundingClientRect(); el.classList.add("rebota");
+  el.classList.add("vista");
+  vistas.add(i);
+  $("hint").classList.add("fuera");
+  $("tarjeta").classList.add("abierta");
+  if (vistas.size === CANCIONES.length) {
+    $("nota").removeAttribute("display");
+    $("nota").classList.add("aparece");
+    $("hint").textContent = "A little note appeared…";
+    $("hint").classList.remove("fuera");
+  }
+}
+
+FLORES.forEach((f, i) => {
+  const g = document.createElementNS(SVGNS, "g");
+  g.setAttribute("class", "flor");
+  g.setAttribute("tabindex", "0");
+  g.setAttribute("role", "button");
+  g.setAttribute("aria-label", `Flower ${i + 1}`);
+  g.setAttribute("transform", `translate(${f.x} ${f.y})`);
+  g.innerHTML =
+    `<g class="giro"><g transform="scale(${(f.r / 30).toFixed(3)})" filter="url(#sombraFlor)">${f.dibujo}</g><circle class="hit" r="${f.r}" fill="transparent"/></g>` +
+    `<text class="corazon" y="${-f.r - 2}" text-anchor="middle">\u2665</text>`;
+  g.addEventListener("click", (ev) => { ev.stopPropagation(); abrir(i, g); });
+  g.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); abrir(i, g); }
+  });
+  ramo.appendChild(g);
+});
+
+/* ---------- Cards and paper note ---------- */
+const cerrar = () => $("tarjeta").classList.remove("abierta");
+const abrirPapel = () => { cerrar(); $("hojaPapel").classList.add("abierto"); };
+const cerrarPapel = () => $("hojaPapel").classList.remove("abierto");
+
+$("cerrar").onclick = cerrar;
+$("nota").addEventListener("click", (ev) => { ev.stopPropagation(); abrirPapel(); });
+$("nota").addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); abrirPapel(); } });
+$("cerrarPapel").onclick = cerrarPapel;
+$("hojaPapel").addEventListener("click", (ev) => { if (ev.target === $("hojaPapel")) cerrarPapel(); });
+if (PLAYLIST_URL) { $("papelLink").href = PLAYLIST_URL; $("papelLink").classList.remove("oculto"); }
+document.addEventListener("click", (ev) => { if (!$("tarjeta").contains(ev.target)) cerrar(); });
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") { cerrar(); cerrarPapel(); } });
+
+/* ---------- Optional Kuromi: if kuromi.png exists next to this file, it replaces the doll ---------- */
+(function () {
+  const prueba = new Image();
+  prueba.onload = () => {
+    $("muneca").setAttribute("display", "none");
+    $("manos").setAttribute("display", "none");
+    const k = $("kuromi");
+    k.setAttribute("href", "kuromi.png");
+    k.removeAttribute("display");
+  };
+  prueba.src = "kuromi.png";
+})();
+
+/* ---------- Optional picture of "cariño": if carino.png exists next to this file, it shows in the letter ---------- */
+(function () {
+  const prueba = new Image();
+  prueba.onload = () => { const el = $("imgCarino"); el.src = "carino.png"; el.classList.remove("oculto"); };
+  prueba.src = "carino.png";
+})();
+</script>
+</body>
+</html>
